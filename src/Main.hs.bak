@@ -1,0 +1,86 @@
+module Main where
+{-# LANGUAGE OverloadedStrings #-}
+
+import Text.HTML.Scalpel
+import Data.Text
+import Text.Regex.Base
+import Text.Regex.Posix
+import Network.Curl.Opts
+
+horseDBURLBase = "http://www.hkhorsedb.com/cseh/"
+horseDBURL = "http://www.hkhorsedb.com/cseh/ctop.php"
+
+data HorseJockey =
+    HorseJockey {
+        horseName :: String
+      , jockeyName :: String
+    } deriving (Show, Eq)
+
+
+data RaceResult = 
+    RaceResult {
+        raceLength :: String  -- race length in meter
+      , horseJockeys :: [HorseJockey]
+    } deriving (Show, Eq)
+ 
+printRaceResultPageURL ::  Text.HTML.Scalpel.URL -> IO ()
+printRaceResultPageURL url = putStrLn url
+
+printMaybeRaceResultPageURLs :: Maybe [Text.HTML.Scalpel.URL] -> IO ()
+printMaybeRaceResultPageURLs r = case r of
+    Nothing -> putStrLn "No race URLS found"
+    Just x -> mapM_ printRaceResultPageURL x
+
+printMaybeRaceResult :: Maybe [RaceResult] -> IO ()
+printMaybeRaceResult r = case r of
+    Nothing -> return ()
+    Just x -> mapM_ print x
+
+printMaybeRaceResults:: [Maybe [RaceResult]] -> IO ()
+printMaybeRaceResults = mapM_ printMaybeRaceResult
+
+crawlerConfig = Config
+    [  CurlUserAgent "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+     , CurlVerbose True
+     , CurlHttpContentDecoding False
+     , CurlEncoding "UTF-8"]
+    defaultDecoder
+
+-- retrieve all result pages
+allResultPageURLs :: IO (Maybe [Text.HTML.Scalpel.URL])
+allResultPageURLs  = scrapeURLWithConfig crawlerConfig horseDBURL resultPageURLs
+    where
+        resultPageURLs :: Scraper String [Text.HTML.Scalpel.URL]
+        resultPageURLs = chroot ("select" @: ["name" @= "redirect"]) optionValues
+
+        optionValues :: Scraper String [Text.HTML.Scalpel.URL]
+        optionValues = chroots ("option" ) optionValue
+
+        optionValue :: Scraper String Text.HTML.Scalpel.URL
+        optionValue = do
+            urlSuffix <- attr "value" $ "option" @: ["value" @=~ (makeRegex "^ctop" ::Regex)]
+            return $ horseDBURLBase ++ urlSuffix
+
+-- parse the results on a result page
+parseResultPages :: Maybe [Text.HTML.Scalpel.URL] -> IO ([Maybe [RaceResult]])
+parseResultPages r = case r of
+    Nothing -> return [Nothing]
+    Just x -> mapM parseResultPage x
+
+parseResultPage :: Text.HTML.Scalpel.URL -> IO (Maybe [RaceResult])
+parseResultPage url = scrapeURLWithConfig crawlerConfig url parseResults
+    where
+        parseResults =  chroots ("table" @: ["align" @= "left"]) parseResult  
+
+        parseResult = do
+            raceLength <- text $ "table" // "tr" // "td" @: ["rowspan" @= "2"] // "div" // "a"
+            return $ RaceResult raceLength []
+
+main :: IO ()
+main = do
+    --urls <- allResultPageURLs 
+    --printMaybeRaceResultPageURLs urls
+    --results <- parseResultPages urls
+    --printMaybeRaceResults results
+    r <- parseResultPage "http://www.hkhorsedb.com/cseh/ctop.php?vdate=20040915"
+    printMaybeRaceResult r
