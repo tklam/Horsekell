@@ -1,10 +1,10 @@
 {-# LANGUAGE Arrows #-}
-module ScrapperParsing where
+module ScraperParsing where
 
 import Text.XML.HXT.Core
 
 import RaceData
-import ScrapperUtilities
+import ScraperUtilities
 
 horseDBURLBase :: String
 horseDBURLBase = "http://www.hkhorsedb.com/cseh/"

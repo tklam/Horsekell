@@ -15,9 +15,9 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     RaceData
-                     , ScrapperParsing
-                     , ScrapperConfig
-                     , ScrapperUtilities
+                     , ScraperParsing
+                     , ScraperConfig
+                     , ScraperUtilities
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
                      , network-uri
@@ -42,6 +42,6 @@ executable horse-racing
                      , utf8-string
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   other-modules:       RaceData
-                     , ScrapperParsing
-                     , ScrapperConfig
-                     , ScrapperUtilities
+                     , ScraperParsing
+                     , ScraperConfig
+                     , ScraperUtilities

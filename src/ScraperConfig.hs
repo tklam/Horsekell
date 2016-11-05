@@ -1,4 +1,4 @@
-module ScrapperConfig where
+module ScraperConfig where
 
 import Network.Curl
 

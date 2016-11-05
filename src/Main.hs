@@ -1,7 +1,7 @@
 --import System.Environment
 --import Control.Concurrent.ParallelIO
 import Control.Concurrent.Async
-import ScrapperParsing
+import ScraperParsing
 
 --import RaceData
 

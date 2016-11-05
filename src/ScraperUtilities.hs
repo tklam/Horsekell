@@ -1,4 +1,4 @@
-module ScrapperUtilities where
+module ScraperUtilities where
 
 import Codec.Text.IConv as IConv
 import Data.ByteString.Lazy as BS (ByteString)
@@ -10,7 +10,7 @@ import Data.Tree.NTree.TypeDefs
 import Network.Curl
 import Text.XML.HXT.Core
 
-import ScrapperConfig
+import ScraperConfig
 
 -------------------------------------------------------------------------------
 openUrl :: String -> String -> String -> IO (Maybe String)
